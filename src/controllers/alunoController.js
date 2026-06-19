@@ -1,5 +1,6 @@
 import AlunoModel from '../models/AlunoModel.js';
 
+
 export const criar = async (req, res) => {
     try {
         if (!req.body) {
@@ -18,7 +19,7 @@ export const criar = async (req, res) => {
             return res.status(400).json({ error: 'O campo "materia" é obrigatório!' });
         }
 
-        const aluno = new AlunoModel({ nome, turma, materia, foto });
+        const aluno = new AlunoModel({ nome, turma, materia, foto: null});
         const data = await aluno.criar();
 
         return res.status(201).json({ message: 'Registro criado com sucesso!', data });
@@ -144,10 +145,7 @@ export const uploadFoto = async (req, res) => {
             return res.status(400).json({ error: 'ID inválido.' });
         }
 
-        // 💡 CORREÇÃO: O multer disponibiliza o arquivo físico dentro de req.file
-        if (!req.file) {
-            return res.status(400).json({ error: 'O arquivo de foto é obrigatório!' });
-        }
+
 
         const aluno = await AlunoModel.buscarPorId(parseInt(id));
         if (!aluno) {
