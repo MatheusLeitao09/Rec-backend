@@ -2,7 +2,7 @@ import express from 'express';
 import 'dotenv/config';
 import alunoRoute from './routes/alunoRoute.js';
 import { apiKey } from './lib/middlewares/apiKey.js';
-import arquivoRoutes from './routes/arquivoRoute.js';
+
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -15,7 +15,7 @@ app.get('/', (req, res) => {
 
 // Rotas
 app.use('/api/alunos', apiKey, alunoRoute);
-app.use('/api/exemplos', apiKey, arquivoRoutes);
+
 
 app.use((req, res) => {
     res.status(404).json({ error: 'Rota não encontrada' });

@@ -8,7 +8,7 @@ export const criar = async (req, res) => {
 
         const { nome, turma, materia, foto } = req.body;
 
-        if (!nome){
+        if (!nome) {
             return res.status(400).json({ error: 'O campo "nome" é obrigatório!' });
         }
         if (!turma) {
@@ -20,7 +20,6 @@ export const criar = async (req, res) => {
         if (!foto) {
             return res.status(400).json({ error: 'O campo "foto" é obrigatório!' });
         }
-
 
         const aluno = new AlunoModel({ nome, turma, materia, foto });
         const data = await aluno.criar();
@@ -99,11 +98,11 @@ export const atualizar = async (req, res) => {
             aluno.foto = req.body.foto;
         }
 
-
-
         const data = await aluno.atualizar();
 
-        return res.status(200).json({ message: `O registro "${data.nome}" foi atualizado com sucesso!`, data });
+        return res
+            .status(200)
+            .json({ message: `O registro "${data.nome}" foi atualizado com sucesso!`, data });
     } catch (error) {
         console.error('Erro ao atualizar:', error);
         return res.status(500).json({ error: 'Erro ao atualizar registro.' });
@@ -126,9 +125,82 @@ export const deletar = async (req, res) => {
 
         await aluno.deletar();
 
-        return res.status(200).json({ message: `O registro "${aluno.nome}" foi deletado com sucesso!`, deletado: aluno });
+        return res
+            .status(200)
+            .json({
+                message: `O registro "${aluno.nome}" foi deletado com sucesso!`,
+                deletado: aluno,
+            });
     } catch (error) {
         console.error('Erro ao deletar:', error);
         return res.status(500).json({ error: 'Erro ao deletar registro.' });
+    }
+};
+
+// Fotos
+export const uploadFoto = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { foto } = req.body;
+
+        if (isNaN(id)) {
+            return res.status(400).json({ error: 'ID inválido.' });
+        }
+
+        if (!foto) {
+            return res.status(400).json({ error: 'O campo foto é obrigatório!' });
+        }
+
+        const aluno = await AlunoModel.buscarPorId(parseInt(id));
+        if (!aluno) {
+            return res.status(404).json({ error: 'Registro não encontrado.' });
+        }
+
+        aluno.foto = foto;
+        const data = await aluno.atualizar();
+
+        return res.status(200).json({ message: 'Foto atualizada com sucesso!', url: data.foto });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ error: 'Erro ao atualizar a foto.' });
+    }
+};
+
+export const buscarFoto = async (req, res) => {
+    try {
+        const { id } = req.params;
+        if (isNaN(id)) return res.status(400).json({ error: 'ID inválido.' });
+
+        const aluno = await AlunoModel.buscarPorId(parseInt(id));
+        if (!aluno) return res.status(404).json({ error: 'Registro não encontrado.' });
+        if (!aluno.foto) return res.status(404).json({ error: 'Nenhuma foto cadastrada.' });
+
+        return res.status(200).json({ url: aluno.foto });
+    } catch (error) {
+        console.error('Erro ao buscar foto:', error);
+        return res.status(500).json({ error: 'Erro ao buscar foto.' });
+    }
+};
+
+export const deletarFoto = async (req, res) => {
+    try {
+        const { id } = req.params;
+        if (isNaN(id)) return res.status(400).json({ error: 'ID inválido.' });
+
+        const aluno = await AlunoModel.buscarPorId(parseInt(id));
+        if (!aluno) return res.status(404).json({ error: 'Registro não encontrado.' });
+        if (!aluno.foto) return res.status(404).json({ error: 'Nenhuma foto para remover.' });
+
+
+        await deletarStorage(aluno.foto);
+
+
+        aluno.foto = null;
+        await aluno.atualizar();
+
+        return res.status(200).json({ message: 'Foto removida com sucesso!' });
+    } catch (error) {
+        console.error('Erro ao remover foto:', error);
+        return res.status(500).json({ error: 'Erro ao remover foto.' });
     }
 };

@@ -10,3 +10,7 @@ router.put('/:id', controller.atualizar);
 router.delete('/:id', controller.deletar);
 
 export default router;
+
+router.post('/:id/foto', controller.uploadFoto);
+router.get('/:id/foto', controller.buscarFoto);
+router.delete('/:id/foto', controller.deletarFoto);
