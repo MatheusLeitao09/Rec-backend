@@ -1,5 +1,8 @@
 import AlunoModel from '../models/AlunoModel.js';
-
+import {
+    upload as uploadStorage,
+    deletar as deletarStorage,
+} from '../lib/helpers/arquivoHelper.js';
 
 export const criar = async (req, res) => {
     try {
@@ -19,7 +22,7 @@ export const criar = async (req, res) => {
             return res.status(400).json({ error: 'O campo "materia" é obrigatório!' });
         }
 
-        const aluno = new AlunoModel({ nome, turma, materia, foto: null});
+        const aluno = new AlunoModel({ nome, turma, materia, foto: null });
         const data = await aluno.criar();
 
         return res.status(201).json({ message: 'Registro criado com sucesso!', data });
@@ -123,12 +126,10 @@ export const deletar = async (req, res) => {
 
         await aluno.deletar();
 
-        return res
-            .status(200)
-            .json({
-                message: `O registro "${aluno.nome}" foi deletado com sucesso!`,
-                deletado: aluno,
-            });
+        return res.status(200).json({
+            message: `O registro "${aluno.nome}" foi deletado com sucesso!`,
+            deletado: aluno,
+        });
     } catch (error) {
         console.error('Erro ao deletar:', error);
         return res.status(500).json({ error: 'Erro ao deletar registro.' });
@@ -136,7 +137,7 @@ export const deletar = async (req, res) => {
 };
 
 // Fotos
-// Fotos
+
 export const uploadFoto = async (req, res) => {
     try {
         const { id } = req.params;
@@ -144,19 +145,21 @@ export const uploadFoto = async (req, res) => {
         if (isNaN(id)) {
             return res.status(400).json({ error: 'ID inválido.' });
         }
-
-
+        if (!req.file) {
+            return res.status(400).json({ error: 'Nenhum arquivo enviado.' });
+        }
 
         const aluno = await AlunoModel.buscarPorId(parseInt(id));
         if (!aluno) {
             return res.status(404).json({ error: 'Registro não encontrado.' });
         }
 
-        // Salva o nome do arquivo gerado pelo Multer no campo foto do aluno
-        aluno.foto = req.file.filename;
-        const data = await aluno.atualizar();
+        const urlPublica = await uploadStorage(id, req.file);
 
-        return res.status(200).json({ message: 'Foto atualizada com sucesso!', url: data.foto });
+        aluno.foto = urlPublica;
+        await aluno.atualizar();
+
+        return res.status(200).json({ message: 'Foto atualizada com sucesso!', url: urlPublica });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ error: 'Erro ao atualizar a foto.' });
@@ -188,9 +191,7 @@ export const deletarFoto = async (req, res) => {
         if (!aluno) return res.status(404).json({ error: 'Registro não encontrado.' });
         if (!aluno.foto) return res.status(404).json({ error: 'Nenhuma foto para remover.' });
 
-
         await deletarStorage(aluno.foto);
-
 
         aluno.foto = null;
         await aluno.atualizar();
