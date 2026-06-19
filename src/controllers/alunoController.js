@@ -80,7 +80,7 @@ export const atualizar = async (req, res) => {
             return res.status(400).json({ error: 'Corpo da requisição vazio. Envie os dados!' });
         }
 
-        const alun = await AlunoModel.buscarPorId(parseInt(id));
+        const aluno = await AlunoModel.buscarPorId(parseInt(id));
 
         if (!aluno) {
             return res.status(404).json({ error: 'Registro não encontrado para atualizar.' });
