@@ -19,11 +19,10 @@ async function main() {
     await prisma.aluno.createMany({
         data: [
             {
-                
                 nome: 'Matheus Gomes Leitão',
                 materia: '2TDS2',
                 turma: 'TDS2',
-                foto: 'link_da_foto_aqui.png',
+                foto: 'https://imgur.com/a/p21Vudc',
             },
         ],
     });
