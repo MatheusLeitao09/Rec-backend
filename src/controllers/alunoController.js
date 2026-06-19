@@ -6,7 +6,7 @@ export const criar = async (req, res) => {
             return res.status(400).json({ error: 'Corpo da requisição vazio. Envie os dados!' });
         }
 
-        const { nome, turma, materia, foto } = req.body;
+        const { nome, turma, materia } = req.body;
 
         if (!nome) {
             return res.status(400).json({ error: 'O campo "nome" é obrigatório!' });
@@ -16,9 +16,6 @@ export const criar = async (req, res) => {
         }
         if (!materia) {
             return res.status(400).json({ error: 'O campo "materia" é obrigatório!' });
-        }
-        if (!foto) {
-            return res.status(400).json({ error: 'O campo "foto" é obrigatório!' });
         }
 
         const aluno = new AlunoModel({ nome, turma, materia, foto });
@@ -138,17 +135,18 @@ export const deletar = async (req, res) => {
 };
 
 // Fotos
+// Fotos
 export const uploadFoto = async (req, res) => {
     try {
         const { id } = req.params;
-        const { foto } = req.body;
 
         if (isNaN(id)) {
             return res.status(400).json({ error: 'ID inválido.' });
         }
 
-        if (!foto) {
-            return res.status(400).json({ error: 'O campo foto é obrigatório!' });
+        // 💡 CORREÇÃO: O multer disponibiliza o arquivo físico dentro de req.file
+        if (!req.file) {
+            return res.status(400).json({ error: 'O arquivo de foto é obrigatório!' });
         }
 
         const aluno = await AlunoModel.buscarPorId(parseInt(id));
@@ -156,7 +154,8 @@ export const uploadFoto = async (req, res) => {
             return res.status(404).json({ error: 'Registro não encontrado.' });
         }
 
-        aluno.foto = foto;
+        // Salva o nome do arquivo gerado pelo Multer no campo foto do aluno
+        aluno.foto = req.file.filename;
         const data = await aluno.atualizar();
 
         return res.status(200).json({ message: 'Foto atualizada com sucesso!', url: data.foto });

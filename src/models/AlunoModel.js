@@ -1,7 +1,7 @@
 import prisma from '../lib/services/prismaClient.js';
 
 export default class AlunoModel {
-    constructor({ id = null, nome, turma, foto, materia } = {}) {
+    constructor({ id = null, nome, turma, foto = null, materia } = {}) {
         this.id = id;
         this.nome = nome;
         this.turma = turma;
